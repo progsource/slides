@@ -1,0 +1,284 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>gtest & gmock - by Petra Baranski</title>
+    <style>
+      body { font-family: sans-serif; }
+      h1, h2, h3 {
+        font-family: Georgia, serif;
+        font-weight: normal;
+        text-align: center;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      img {
+        margin: 0 auto;
+        max-height: 450px;
+      }
+      ul li {
+        line-height: 2.4;
+      }
+      ol li {
+        line-height: 1.2;
+      }
+
+      .codeLeft, .codeRight {
+        display: inline-block;
+        float: left;
+        margin-right: 10px;
+        /*max-width: 50%;*/
+      }
+
+      .codeRight {
+        left: 45%;
+        position: absolute;
+        top: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# gtest & gmock
+
+## by Petra Baranski
+
+---
+
+name: agenda
+
+# Agenda
+
+1. [Who am I](#whoami)
+2. [Testing Pyramid](#testing-pyramid)
+3. gtest
+  1. [What is it?](#gtest-whatisit)
+  2. [What's inside?](#gtest-whats-inside)
+  3. [example](#gtest-example1)
+4. gmock
+  1. [What is it?](#gmock-whatisit)
+  2. [What's inside?](#gmock-whatsinside)
+  3. [example](#gmock-example1)
+5. [Alternatives](#alternatives)
+6. [References](#references)
+7. Outro
+
+---
+
+name: whoami
+
+# Who am I
+
+## Petra Baranski
+
+* **Languages:** C++, C#, PHP, JavaScript, CSS, HTML
+* **Job:** C++ Mobile Game Programmer @ InnoGames
+* **GitHub:** https://github.com/progsource
+* **Website:** http://progsource.de
+
+---
+
+class: center, middle
+name: testing-pyramid
+
+# Testing Pyramid
+
+.center[![Test Pyramid](img/testpyramid.png "Test Pyramid")]
+
+---
+
+name: gtest-whatisit
+
+# gtest - What is it?
+
+* Name: GoogleTest
+* GitHub: https://github.com/google/googletest/tree/master/googletest
+* Docs: https://github.com/google/googletest/tree/master/googletest/docs
+* For what?: Unit and Integration Tests
+
+---
+
+name: gtest-whats-inside
+
+# gtest - What's inside?
+
+* TEST
+* fixtures (TEST_F)
+* ASSERT_* and EXPECT_*
+* Value-Parameterized Tests (_P)
+* output to stdout or file
+
+---
+
+class: middle
+name: gtest-example1
+
+# gtest - example
+
+
+```cpp
+uint64_t getSomeNumber(const uint64_t someInputNumber)
+{
+  return 42 + someInputNumber;
+}
+
+TEST(ANumberTest, ReturnsTheAnswerAddedToInputNumber)
+{
+  uint64_t someNumber = 23;
+
+  ASSERT_EQ(someNumber + 42, getSomeNumber(someNumber));
+  // or
+  ASSERT_THAT(getSomeNumber(someNumber), Eq(someNumber + 42));
+}
+```
+
+---
+
+class: middle
+name: gtest-example2
+
+# gtest - example
+
+```cpp
+class ANumberTest : public ::testing::Test
+{
+protected:
+  virtual void SetUp()
+  {
+    arbitraryNumber = 23;
+  }
+
+  virtual void TearDown()
+  {
+    // do something
+  }
+
+  uint64_t arbitraryNumber;
+};
+
+* TEST_F(ANumberTest, ReturnsTheAnswerAddedToInputNumber)
+{
+  ASSERT_EQ(arbitraryNumber + 42, getSomeNumber(arbitraryNumber));
+}
+```
+
+---
+
+name: gmock-whatisit
+
+# gmock - What is it?
+
+* Name: GoogleMock
+* GitHub: https://github.com/google/googletest/tree/master/googlemock
+* Docs: https://github.com/google/googletest/tree/master/googlemock/docs
+* For what?: Mocks for Unit and Integration Tests
+
+---
+
+name: gmock-whatsinside
+
+# gmock - What's inside?
+
+* mock methods (MOCK_METHOD*, MOCK_CONST_METHOD*)
+* setting expectations (EXPECT_CALL)
+* delegating calls to a fake (ON_CALL)
+
+---
+
+class: middle
+name: gmock-example1
+
+# gmock - example
+
+.codeLeft[
+```cpp
+class Dog
+{
+public:
+  // ...
+  virtual bool Eat(Food* g) = 0;
+
+  virtual int Run(int distance);
+  virtual int Run(int distance, int speed);
+  virtual Color& GetColor();
+  virtual const Color& GetColor() const;
+
+protected:
+  virtual void Bark();
+
+private:
+  virtual int DoStuff();
+};
+```
+]
+.codeRight[
+```cpp
+class MockDog : public Dog
+{
+public:
+  // ...
+  MOCK_METHOD1(Eat, bool(Food* g));
+
+  MOCK_METHOD1(Run, int(int distance));
+  MOCK_METHOD2(Run, int(int distance, int speed);
+  MOCK_METHOD0(GetColor, Color&());
+  MOCK_CONST_METHOD0(GetColor, const Color&());
+
+  // must be public, even if protected
+  // or private in base class
+  MOCK_METHOD0(Bark, void());
+  MOCK_METHOD0(DoStuff, int());
+};
+```
+]
+---
+
+class: middle
+name: gmock-example2
+
+# gmock - example
+
+```cpp
+TEST(...) {
+  MockDog mockedDog;
+  EXPECT_CALL(mockedDog, DoStuff())
+    .WillOnce(Return(42));
+  // ... code that uses mockDog ...
+}
+```
+
+---
+
+class: center, middle
+name: alternatives
+
+# Alternatives
+
+https://en.wikipedia.org/wiki/List_of_unit_testing_frameworks#C.2B.2B
+
+---
+
+name: references
+
+# References
+
+* [A quick introduction to the Google C++ Testing Framework - ibm](http://www.ibm.com/developerworks/aix/library/au-googletestingframework.html)
+* [GoogleTest](https://github.com/google/googletest/tree/master/googletest/docs) & [GoogleMock documentation](https://github.com/google/googletest/tree/master/googlemock/docs)
+* [Modern C++ Programming with Test-Driven Development by Jeff Langr](https://www.amazon.de/Modern-Programming-Test-Driven-Development-Better/dp/1937785483/)
+
+---
+
+class: center, middle
+
+# Thank you for your attention!
+
+    </textarea>
+    <script src="js/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create({highlightLines: true});
+    </script>
+  </body>
+</html>
